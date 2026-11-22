@@ -1,0 +1,110 @@
+name: Build Release APK
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:  # Manual trigger from Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Flutter
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true
+
+      # Setup Java (required for Android build)
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      # Install dependencies
+      - name: Get Flutter dependencies
+        run: flutter pub get
+        working-directory: ./expense_tracker
+
+      # Verify code
+      - name: Analyze code
+        run: flutter analyze
+        working-directory: ./expense_tracker
+
+      # Run tests
+      - name: Run tests
+        run: flutter test
+        working-directory: ./expense_tracker
+
+      # Build APK
+      - name: Build Release APK
+        run: flutter build apk --release --split-per-abi
+        working-directory: ./expense_tracker
+
+      # Build App Bundle (for Play Store)
+      - name: Build Release App Bundle
+        run: flutter build appbundle --release
+        working-directory: ./expense_tracker
+
+      # Upload APK artifacts
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: |
+            expense_tracker/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      # Upload App Bundle artifact
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-appbundle
+          path: expense_tracker/build/app/outputs/bundle/release/*.aab
+          retention-days: 30
+
+      # Create Release on tag push
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            expense_tracker/build/app/outputs/flutter-apk/*.apk
+            expense_tracker/build/app/outputs/bundle/release/*.aab
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Optional: Code quality checks
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+        working-directory: ./expense_tracker
+      - run: flutter format --set-exit-if-changed .
+        working-directory: ./expense_tracker
+      - run: flutter analyze
+        working-directory: ./expense_tracker

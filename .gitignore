@@ -1,0 +1,58 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+build/
+*.dart_tool/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/local.properties
+android/gradle.properties
+android/gradlew
+android/gradlew.bat
+android/gradle/
+
+# iOS
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.dill
+ios/Flutter/flutter_assets/
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/.generated/
+ios/Pods/
+ios/Podfile.lock
+ios/*.xcworkspace
+xcuserdata/
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Keys/Secrets
+*.jks
+*.keystore
+key.properties
+
+# Coverage
+coverage/
+*.lcov
+
+# Logs
+*.log
+
+# Misc
+*.orig
+*.swp
+*~
