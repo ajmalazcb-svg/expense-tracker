@@ -216,6 +216,15 @@ class DatabaseService {
     await db.delete('expense_log');
   }
 
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.delete('credit_cards');
+    await db.delete('rent_bills');
+    await db.delete('daily_expenses');
+    await db.delete('expense_log');
+    await db.delete('settings');
+  }
+
   Future<void> close() async {
     final db = await database;
     await db.close();

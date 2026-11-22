@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -9,7 +8,6 @@ import 'models/expense_data.dart';
 import 'models/user_settings.dart';
 import 'services/database_service.dart';
 import 'services/notification_service.dart';
-import 'services/firebase_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/expense_plan_screen.dart';
 import 'screens/expense_log_screen.dart';
@@ -24,9 +22,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
-
   // Initialize timezone
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Dubai'));
@@ -38,15 +33,15 @@ void main() async {
   final databaseService = DatabaseService();
   await databaseService.init();
 
-  // Initialize Firebase service (auto sign-in anonymously)
-  final firebaseService = FirebaseService();
-  await firebaseService.signInAnonymously();
+  // Load user settings
+  final settings = UserSettings();
+  await settings.load();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ExpenseData(databaseService)),
-        ChangeNotifierProvider(create: (_) => UserSettings()),
+        ChangeNotifierProvider(create: (_) => settings),
       ],
       child: const ExpenseTrackerApp(),
     ),

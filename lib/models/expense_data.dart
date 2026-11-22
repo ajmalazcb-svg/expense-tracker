@@ -530,6 +530,18 @@ class ExpenseData extends ChangeNotifier {
   }
 
   // Roll to next month
+  Future<void> clearAllData() async {
+    await _db.clearAllData();
+    _creditCards = _getDefaultCreditCards();
+    _rentBills = _getDefaultRentBills();
+    _dailyExpenses = _getDefaultDailyExpenses();
+    _expenseLog.clear();
+    await _saveCreditCards();
+    await _saveRentBills();
+    await _saveDailyExpenses();
+    notifyListeners();
+  }
+
   Future<void> rollToNextMonth() async {
     // Credit cards: current outstanding becomes previous
     for (var card in _creditCards) {

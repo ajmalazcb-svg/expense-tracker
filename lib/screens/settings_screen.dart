@@ -5,7 +5,6 @@ import '../models/user_settings.dart';
 import '../models/expense_data.dart';
 import '../services/notification_service.dart';
 import '../services/export_service.dart';
-import '../services/firebase_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -264,21 +263,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _backupToCloud(BuildContext context) async {
-    try {
-      final firebaseService = FirebaseService();
-      // Try anonymous sign in if not signed in
-      if (firebaseService.currentUser == null) {
-        await firebaseService.signInAnonymously();
-      }
-      await firebaseService.backupData(context.read<ExpenseData>());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Backed up to cloud successfully')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Backup failed: $e'), backgroundColor: AppTheme.dangerColor),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Cloud backup requires Firebase setup (see README)')),
+    );
   }
 
   void _confirmClearData(BuildContext context, ExpenseData expenseData) {
@@ -291,16 +278,13 @@ class SettingsScreen extends StatelessWidget {
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           FilledButton(
             onPressed: () async {
-              // Clear database
-              await expenseData._db.close();
-              // Re-initialize
-              await expenseData._db.init();
-              // Reload with defaults
-              await expenseData._loadData();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All data cleared')),
-              );
+              await expenseData.clearAllData();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('All data cleared')),
+                );
+              }
             },
             style: FilledButton.styleFrom(backgroundColor: AppTheme.dangerColor),
             child: const Text('Clear All'),
